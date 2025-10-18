@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Project Chronos</title>
+
+  <!-- ✅ Add Cinzel font for the title -->
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-accent: rgba(0, 0, 0, 0.55);
+      --card: rgba(255, 255, 255, 0.03);
+      --accent: #d6c39a;
+      --muted: #cfc6ab;
+      --ink: #efe6c7;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, 'Roboto', sans-serif;
+      background: #0f0f10;
+      color: var(--ink);
+    }
+
+    .photo-bg {
+      
+
+
+
+        
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(2, 2, 2, 0.45), rgba(8, 8, 8, 0.65));
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .wrap {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 900px;
+      background: var(--bg-accent);
+      border-radius: 14px;
+      padding: 34px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 42px;
+      color: var(--accent);
+      letter-spacing: 1px;
+      font-family: 'Cinzel', serif;  /* 🎯 Elegant serif font for title */
+      font-weight: 700;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      margin-top: 8px;
+      margin-bottom: 16px;
+      font-weight: 600;
+      font-size: 18px;
+      font-family: 'Cinzel', serif;  /* 🎯 Matching subtitle font */
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .lead {
+      color: #dcd2ad;
+      margin-bottom: 18px;
+      font-size: 16px;
+    }
+
+    form {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 14px 16px;
+      border-radius: 10px;
+      border: none;
+      background: var(--card);
+      color: var(--ink);
+      outline: none;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: none;
+      background: var(--accent);
+      color: #0b0b09;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .report {
+      margin-top: 22px;
+      border-top: 1px dashed rgba(255, 255, 255, 0.04);
+      padding-top: 18px;
+      text-align: left;
+    }
+
+    .section {
+      margin-bottom: 14px;
+    }
+
+    .section-title {
+      font-weight: 700;
+      color: #e6d3a1;
+      margin-bottom: 6px;
+    }
+
+    .box {
+      background: rgba(255, 255, 255, 0.02);
+      padding: 12px;
+      border-radius: 8px;
+      color: var(--ink);
+      min-height: 36px;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="photo-bg" aria-hidden="true"></div>
+  <div class="overlay" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <div class="card">
+      <h1>Project Chronos</h1>
+      <div class="subtitle">The AI Archaeologist</div>
+      <p class="lead">Enter a short fragment from the digital past and Chronos will reconstruct it.</p>
+
+      <form id="fragmentForm">
+        <input id="fragment" name="fragment" type="text" placeholder="e.g. smh at the top 8 drama" required />
+        <button type="submit">Reconstruct</button>
+      </form>
+
+      <div class="report" id="reportArea" hidden>
+        <div class="section">
+          <div class="section-title">Original Fragment</div>
+          <div class="box" id="originalBox"></div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">AI-Reconstructed Text</div>
+          <div class="box" id="reconstructedBox"></div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Contextual Sources</div>
+          <div class="box" id="linksBox"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  const form = document.getElementById('fragmentForm');
+  const reportArea = document.getElementById('reportArea');
+  const originalBox = document.getElementById('originalBox');
+  const reconstructedBox = document.getElementById('reconstructedBox');
+  const linksBox = document.getElementById('linksBox');
+  const fragmentInput = document.getElementById('fragment');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fragment = fragmentInput.value.trim();
+    if (!fragment) return;
+
+    reconstructedBox.textContent = "Reconstructing...";
+    linksBox.textContent = "";
+
+    try {
+      const resp = await fetch('/api/reconstruct', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fragment })
+      });
+
+      const data = await resp.json();
+      if (!resp.ok) {
+        reconstructedBox.textContent = data.error || 'An error occurred.';
+        reportArea.hidden = false;
+        return;
+      }
+
+      originalBox.textContent = data.original || fragment;
+      reconstructedBox.textContent = data.reconstruct || 'No reconstruction found.';
+      linksBox.innerHTML = (data.sources && data.sources.length)
+        ? data.sources.map(s => `<a href="${s.link}" target="_blank">${s.title}</a><br>${s.snippet}`).join('<hr>')
+        : 'No sources found.';
+      reportArea.hidden = false;
+
+    } catch (err) {
+      reconstructedBox.textContent = 'Network error: ' + err.message;
+      reportArea.hidden = false;
+      console.error('Fetch failed:', err);
+    }
+  });
+  </script>
+</body>
+</html>
