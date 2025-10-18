@@ -17,7 +17,7 @@ Setup Instructions
 
 1. Clone the Repository
 
-git clone https://github.com/Sherbo-pie/Project-Chronos.git
+git clone [https://github.com/Sherbo-pie/Project-Chronos.git](https://github.com/Navu1236/Project-Chronos)
 cd project-chronos
 
 2. Create a Virtual Environment
